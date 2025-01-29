@@ -2,8 +2,7 @@ INITRD := initramfs.cpio.gz
 ROOTFS := rootfs
 export BIN := $(CURDIR)/$(ROOTFS)/bin
 
-.PHONY:
-default:
+.PHONY: build run clean
 
 build:
 	mkdir -p $(BIN)
@@ -25,3 +24,4 @@ run: $(INITRD) bzImage
 clean:
 	@-rm -r $(ROOTFS)
 	@-rm $(INITRD)
+	$(MAKE) -C src clean

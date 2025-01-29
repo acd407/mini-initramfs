@@ -1,11 +1,16 @@
-CFLAGS += -nostdlib -ffreestanding -fno-stack-protector
-LDFLAGS += -static
+CFLAGS += -c -nostdlib -ffreestanding -fno-stack-protector
+LDFLAGS += -static -s
 
-shell: shell.o syscall.o
+.PHONY: default clean
+
+default: shell.o syscall.o
 	$(LD) $(LDFLAGS) $^ -o $(BIN)/$@
 
 %.o : %.c
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@
 
 %.o : %.S
 	$(AS) $< -o $@
+
+clean:
+	@-rm shell.o syscall.o
