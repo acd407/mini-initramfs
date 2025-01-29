@@ -1,17 +1,16 @@
-TARGETS := build root run clean
 INITRD := initramfs.cpio.gz
 ROOTFS := rootfs
 export BIN := $(CURDIR)/$(ROOTFS)/bin
-.PHONY: default $(TARGETS)
 
+.PHONY:
 default:
-	@echo $(TARGETS)
 
 build:
 	mkdir -p $(BIN)
 	$(MAKE) -C src
+	cp -r skeleton/* $(ROOTFS)
 
-root: build
+$(INITRD): build
 	@cd $(ROOTFS) && find . -print0 | cpio --null -ov --format=newc | gzip >../$(INITRD)
 
 run: $(INITRD) bzImage
