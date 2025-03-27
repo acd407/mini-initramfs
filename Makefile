@@ -1,27 +1,42 @@
-INITRD := initramfs.cpio.gz
+INITRD := initramfs.cpio.xz
 ROOTFS := rootfs
 export BIN := $(CURDIR)/$(ROOTFS)/bin
 
-.PHONY: build run clean
+.PHONY: $(ROOTFS) run debug clean
 
-build:
+$(INITRD): $(ROOTFS)
+	cd $(ROOTFS) && find . -print0 \
+		| cpio --null -ov --format=newc \
+		| 7z a -txz -an -si -so \
+		>../$(INITRD)
+
+$(ROOTFS):
 	mkdir -p $(BIN)
-	$(MAKE) -C src
+	$(MAKE) -C src OUTPUT=$(BIN)
 	cp -r skeleton/* $(ROOTFS)
 
-$(INITRD): build
-	@cd $(ROOTFS) && find . -print0 | cpio --null -ov --format=newc | gzip >../$(INITRD)
-
 run: $(INITRD) bzImage
-	@qemu-system-x86_64 \
+	qemu-system-x86_64 \
 	  -m 128 \
 	  -nographic \
+	  -nodefaults \
 	  -serial mon:stdio \
 	  -kernel bzImage \
-	  -initrd initramfs.cpio.gz \
+	  -initrd $(INITRD) \
 	  -append "console=ttyS0"
 
+debug: $(INITRD) bzImage
+	qemu-system-x86_64 \
+	  -m 128 \
+	  -nographic \
+	  -nodefaults \
+	  -serial mon:stdio \
+	  -kernel bzImage \
+	  -initrd $(INITRD) \
+	  -append "console=ttyS0" \
+	  -s -S
+
 clean:
-	@-rm -r $(ROOTFS)
-	@-rm $(INITRD)
+	rm -rf $(ROOTFS)
+	rm -f $(INITRD)
 	$(MAKE) -C src clean

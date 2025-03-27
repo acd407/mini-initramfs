@@ -1,47 +1,11 @@
-#include <stdint.h>
 #include <stdlib.h>
-#include <sys/syscall.h>
+#include <string.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-#define _STR(x) #x
-#define STR(x)  _STR (x)
-
-#ifndef NDEBUG
-#define assert(cond)                                                           \
-    do {                                                                       \
-        if (! (cond)) {                                                        \
-            const char msg[] = "Assertion failed: " #cond " at " __FILE__      \
-                               ":" STR (__LINE__) "\n";                        \
-            write (STDERR_FILENO, msg, sizeof (msg) - 1);                      \
-            exit (EXIT_FAILURE);                                               \
-        }                                                                      \
-    } while (0)
-#else
-#define assert(cond) ((void) 0)
-#endif
-
-#define exit(x) _exit (x)
-
-unsigned long strlen (const char *str) {
-    int count = 0;
-    while (str[count])
-        count++;
-    return count;
-}
 
 void perror (const char *msg) {
     write (STDERR_FILENO, msg, strlen (msg));
     fsync (STDERR_FILENO);
-}
-
-void *memset (void *dst, int c, unsigned long n) {
-    char *cdst = (char *) dst;
-    int i;
-    for (i = 0; i < n; i++) {
-        cdst[i] = c;
-    }
-    return dst;
 }
 
 #define READBUF 80
